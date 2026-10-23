@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const incidentsRouter = require('./routes/incidents');
+const commentsRouter = require('./routes/comments');
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'incident-hub-backend' });
 });
 
+app.use('/api/incidents/:id/comments', commentsRouter);
 app.use('/api/incidents', incidentsRouter);
 
 // JSON mal formado u otros errores

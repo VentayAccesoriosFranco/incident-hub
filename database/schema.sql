@@ -21,10 +21,19 @@ CREATE TABLE IF NOT EXISTS incidents (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS comments (
+  id SERIAL PRIMARY KEY,
+  incident_id INTEGER NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
+  author_id INTEGER NOT NULL REFERENCES users(id),
+  body TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status);
 CREATE INDEX IF NOT EXISTS idx_incidents_priority ON incidents(priority);
 CREATE INDEX IF NOT EXISTS idx_incidents_category ON incidents(category);
 CREATE INDEX IF NOT EXISTS idx_incidents_assigned_to ON incidents(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_comments_incident ON comments(incident_id);
 
 INSERT INTO users (name, email, role) VALUES
   ('Usuario Demo', 'usuario@demo.local', 'USUARIO'),
