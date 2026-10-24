@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const incidentsRouter = require('./routes/incidents');
 const commentsRouter = require('./routes/comments');
+const dashboardRouter = require('./routes/dashboard');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/incidents/:id/comments', commentsRouter);
 app.use('/api/incidents', incidentsRouter);
+app.use('/api/dashboard', dashboardRouter);
 
 // JSON mal formado u otros errores
 app.use((err, req, res, next) => {
