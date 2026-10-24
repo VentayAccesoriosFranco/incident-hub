@@ -74,3 +74,59 @@ stages:
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)/incident-hub-$(Build.BuildId).zip'
               ArtifactName: 'drop'
+
+  - stage: Deploy_Dev
+    displayName: Despliegue a DEV
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployDev
+        displayName: Desplegar en dev
+        environment: dev
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: DownloadBuildArtifacts@0
+                  displayName: Descargar artefacto drop
+                  inputs:
+                    buildType: current
+                    downloadType: single
+                    artifactName: drop
+                    downloadPath: '$(System.ArtifactsDirectory)'
+
+                - script: dir "$(System.ArtifactsDirectory)\drop"
+                  displayName: Verificar artefacto drop
+
+                - script: echo Despliegue simulado en DEV
+                  displayName: Despliegue en DEV
+
+  - stage: Deploy_QA
+    displayName: Despliegue a QA
+    dependsOn: Deploy_Dev
+    condition: succeeded()
+    jobs:
+      - deployment: DeployQA
+        displayName: Desplegar en qa
+        environment: qa
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: echo Despliegue simulado en QA
+                  displayName: Despliegue en QA
+
+  - stage: Deploy_Prod
+    displayName: Despliegue a PROD
+    dependsOn: Deploy_QA
+    condition: succeeded()
+    jobs:
+      - deployment: DeployProd
+        displayName: Desplegar en prod
+        environment: prod
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - script: echo Despliegue simulado en PROD
+                  displayName: Despliegue en PROD
