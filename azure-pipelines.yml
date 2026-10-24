@@ -1,0 +1,76 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  name: Default
+  demands:
+    - Agent.Name -equals agente-local-01
+
+variables:
+  nodeVersion: '20.x'
+
+stages:
+  - stage: Build
+    displayName: Build y pruebas
+    jobs:
+      - job: BuildBackend
+        displayName: Build del backend
+        steps:
+          - checkout: self
+            displayName: Checkout del repositorio
+
+          - task: NodeTool@0
+            displayName: Instalar Node
+            inputs:
+              versionSpec: $(nodeVersion)
+
+          - script: npm ci
+            displayName: Instalar dependencias
+            workingDirectory: backend
+
+          - script: npm run build
+            displayName: Build (verificacion de sintaxis)
+            workingDirectory: backend
+
+          - script: npm test
+            displayName: Pruebas automatizadas
+            workingDirectory: backend
+
+          - script: npm audit --audit-level=high
+            displayName: Revision de dependencias (npm audit)
+            workingDirectory: backend
+            continueOnError: true
+
+          - task: CopyFiles@2
+            displayName: Preparar contenido del artefacto
+            inputs:
+              SourceFolder: '$(Build.SourcesDirectory)'
+              Contents: |
+                backend/src/**
+                backend/package.json
+                backend/package-lock.json
+                database/schema.sql
+                devops/docker-compose.yml
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/package'
+
+          - task: ArchiveFiles@2
+            displayName: Empaquetar artefacto
+            inputs:
+              rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/package'
+              includeRootFolder: false
+              archiveType: zip
+              archiveFile: '$(Build.ArtifactStagingDirectory)/incident-hub-$(Build.BuildId).zip'
+              replaceExistingArchive: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publicar artefacto
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)/incident-hub-$(Build.BuildId).zip'
+              ArtifactName: 'drop'
