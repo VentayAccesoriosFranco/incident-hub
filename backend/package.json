@@ -7,11 +7,21 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "build": "node --check src/app.js && node --check src/server.js",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "test:coverage": "jest --runInBand --coverage"
   },
+  
   "jest": {
-    "testEnvironment": "node"
-  },
+  "collectCoverageFrom": ["src/**/*.js", "!src/server.js"],
+  "coverageThreshold": {
+    "global": {
+      "statements": 70,
+      "branches": 50,
+      "functions": 70,
+      "lines": 70
+    }
+  }
+},
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
